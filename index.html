@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minyak Sawit - Kuis Interaktif</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --forest: #1a5c38;
+    --forest-deep: #0f3820;
+    --forest-light: #2d7a4f;
+    --palm: #c0561a;
+    --palm-light: #e8742a;
+    --cream: #f7f3ec;
+    --parchment: #ede6d6;
+    --ink: #1a1a14;
+    --mist: #8fa89a;
+    --gold: #b8962e;
+    --gold-light: #d4b04a;
+    --white: #ffffff;
+    --correct: #2d7a4f;
+    --wrong: #c0391a;
+    --shadow: 0 4px 24px rgba(26,92,56,0.12);
+    --shadow-hover: 0 8px 40px rgba(26,92,56,0.2);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse at 20% 20%, rgba(26,92,56,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 80%, rgba(192,86,26,0.04) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ─── HEADER ─────────────────────────────────────────────────────────────── */
+  .site-header {
+    background: var(--forest-deep);
+    color: var(--cream);
+    padding: 48px 40px 36px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .site-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--gold), var(--palm), var(--gold));
+  }
+
+  .header-leaf {
+    position: absolute;
+    right: -20px; top: -40px;
+    width: 320px; height: 320px;
+    opacity: 0.06;
+    font-size: 280px;
+    line-height: 1;
+    transform: rotate(-20deg);
+    pointer-events: none;
+  }
+
+  .header-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .kuis-label {
+    font-family: 'Source Serif 4', serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold-light);
+    margin-bottom: 12px;
+  }
+
+  h1.main-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(28px, 5vw, 52px);
+    font-weight: 900;
+    line-height: 1.1;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+
+  .subtitle {
+    font-size: 16px;
+    font-weight: 300;
+    color: var(--mist);
+    font-style: italic;
+    margin-bottom: 28px;
+  }
+
+  .progress-bar-wrap {
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+    height: 6px;
+    margin-top: 20px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    border-radius: 4px;
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+    width: 0%;
+  }
+
+  .progress-text {
+    font-size: 12px;
+    color: var(--mist);
+    margin-top: 8px;
+    letter-spacing: 1px;
+  }
+
+  /* ─── SECTION TABS ───────────────────────────────────────────────────────── */
+  .tabs-wrap {
+    background: var(--forest-deep);
+    padding: 0 40px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .tabs-wrap::-webkit-scrollbar { display: none; }
+
+  .tabs {
+    display: flex;
+    gap: 0;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .tab {
+    padding: 14px 18px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: var(--mist);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+    font-family: 'Source Serif 4', serif;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .tab:hover { color: var(--cream); }
+
+  .tab.active {
+    color: var(--gold-light);
+    border-bottom-color: var(--gold-light);
+  }
+
+  .tab .tab-status {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    flex-shrink: 0;
+  }
+
+  .tab.completed .tab-status { background: var(--correct); }
+  .tab.in-progress .tab-status { background: var(--gold); }
+
+  /* ─── MAIN CONTENT ───────────────────────────────────────────────────────── */
+  .main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 40px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ─── SECTION PANEL ──────────────────────────────────────────────────────── */
+  .section-panel {
+    display: none;
+    animation: fadeUp 0.35s ease forwards;
+  }
+
+  .section-panel.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-header {
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--parchment);
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .section-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 52px;
+    font-weight: 900;
+    color: var(--parchment);
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: -4px;
+  }
+
+  .section-meta h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--forest);
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+
+  .section-meta .section-sub {
+    font-size: 13px;
+    color: var(--mist);
+    font-style: italic;
+  }
+
+  .section-score-badge {
+    margin-left: auto;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .score-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--forest);
+  }
+
+  .score-label {
+    font-size: 11px;
+    color: var(--mist);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  /* ─── QUESTION CARD ──────────────────────────────────────────────────────── */
+  .question-card {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+    border-left: 4px solid var(--parchment);
+    transition: box-shadow 0.2s, border-color 0.3s;
+  }
+
+  .question-card.answered-correct {
+    border-left-color: var(--correct);
+    background: #f0f8f3;
+  }
+
+  .question-card.answered-wrong {
+    border-left-color: var(--wrong);
+    background: #fdf5f3;
+  }
+
+  .q-number {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--mist);
+    margin-bottom: 10px;
+  }
+
+  .q-text {
+    font-size: 17px;
+    font-weight: 400;
+    line-height: 1.6;
+    color: var(--ink);
+    margin-bottom: 20px;
+  }
+
+  .q-text em {
+    font-style: italic;
+    color: var(--forest);
+  }
+
+  /* ─── OPTIONS ────────────────────────────────────────────────────────────── */
+  .options {
+    display: grid;
+    gap: 10px;
+  }
+
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 18px;
+    border: 2px solid var(--parchment);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.18s;
+    background: var(--cream);
+    font-size: 15px;
+    line-height: 1.5;
+    text-align: left;
+    font-family: 'Source Serif 4', serif;
+    color: var(--ink);
+    width: 100%;
+  }
+
+  .option:hover:not(:disabled) {
+    border-color: var(--forest-light);
+    background: rgba(26,92,56,0.04);
+    transform: translateX(3px);
+  }
+
+  .option-letter {
+    font-family: 'Playfair Display', serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--forest);
+    background: var(--parchment);
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    transition: all 0.18s;
+  }
+
+  .option:hover:not(:disabled) .option-letter {
+    background: var(--forest);
+    color: var(--white);
+  }
+
+  .option.correct {
+    border-color: var(--correct);
+    background: rgba(45,122,79,0.08);
+    cursor: default;
+  }
+
+  .option.correct .option-letter {
+    background: var(--correct);
+    color: var(--white);
+  }
+
+  .option.wrong {
+    border-color: var(--wrong);
+    background: rgba(192,57,26,0.06);
+    cursor: default;
+  }
+
+  .option.wrong .option-letter {
+    background: var(--wrong);
+    color: var(--white);
+  }
+
+  .option.dimmed {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  .option:disabled { cursor: default; }
+
+  /* ─── FEEDBACK ───────────────────────────────────────────────────────────── */
+  .feedback {
+    margin-top: 14px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.6;
+    display: none;
+    animation: fadeIn 0.25s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .feedback.show { display: block; }
+
+  .feedback.correct-fb {
+    background: rgba(45,122,79,0.1);
+    border: 1px solid rgba(45,122,79,0.25);
+    color: var(--forest-deep);
+  }
+
+  .feedback.wrong-fb {
+    background: rgba(192,57,26,0.08);
+    border: 1px solid rgba(192,57,26,0.2);
+    color: #7a1a0a;
+  }
+
+  .feedback strong { font-weight: 600; }
+
+  /* ─── SECTION RESULT ─────────────────────────────────────────────────────── */
+  .section-result {
+    background: var(--forest-deep);
+    color: var(--white);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-top: 28px;
+    display: none;
+    text-align: center;
+    animation: fadeUp 0.4s ease;
+  }
+
+  .section-result.show { display: block; }
+
+  .result-score {
+    font-family: 'Playfair Display', serif;
+    font-size: 56px;
+    font-weight: 900;
+    color: var(--gold-light);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .result-label {
+    font-size: 14px;
+    color: var(--mist);
+    margin-bottom: 20px;
+    font-style: italic;
+  }
+
+  .result-msg {
+    font-size: 16px;
+    color: var(--cream);
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+
+  .btn-next {
+    background: var(--gold);
+    color: var(--forest-deep);
+    border: none;
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-family: 'Source Serif 4', serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-next:hover {
+    background: var(--gold-light);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(184,150,46,0.4);
+  }
+
+  /* ─── FINAL RESULTS ──────────────────────────────────────────────────────── */
+  #final-results {
+    display: none;
+    animation: fadeUp 0.5s ease;
+  }
+
+  #final-results.show { display: block; }
+
+  .final-card {
+    background: var(--forest-deep);
+    border-radius: 16px;
+    padding: 48px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .final-card::before {
+    content: '🌿';
+    position: absolute;
+    font-size: 200px;
+    opacity: 0.04;
+    top: -40px; right: -40px;
+    pointer-events: none;
+  }
+
+  .final-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold-light);
+    margin-bottom: 16px;
+  }
+
+  .final-big-score {
+    font-family: 'Playfair Display', serif;
+    font-size: 96px;
+    font-weight: 900;
+    color: var(--white);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .final-total {
+    font-size: 18px;
+    color: var(--mist);
+    margin-bottom: 32px;
+    font-style: italic;
+  }
+
+  .section-breakdown {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin: 32px 0;
+    text-align: left;
+  }
+
+  .breakdown-item {
+    background: rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+
+  .breakdown-section {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold-light);
+    margin-bottom: 6px;
+  }
+
+  .breakdown-score {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--white);
+  }
+
+  .breakdown-bar {
+    height: 3px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+
+  .breakdown-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    border-radius: 2px;
+  }
+
+  .btn-restart {
+    background: transparent;
+    color: var(--gold-light);
+    border: 2px solid var(--gold);
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-family: 'Source Serif 4', serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+  }
+
+  .btn-restart:hover {
+    background: var(--gold);
+    color: var(--forest-deep);
+  }
+
+  /* ─── RESPONSIVE ─────────────────────────────────────────────────────────── */
+  @media (max-width: 600px) {
+    .main { padding: 24px 20px 60px; }
+    .site-header { padding: 32px 20px 24px; }
+    .tabs-wrap { padding: 0 20px; }
+    .question-card { padding: 20px; }
+    .section-header { flex-direction: column; gap: 8px; }
+    .section-number { font-size: 36px; }
+    .final-big-score { font-size: 64px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-leaf">🌿</div>
+  <div class="header-inner">
+    <div class="kuis-label">VCE Indonesian - Units 3 &amp; 4</div>
+    <h1 class="main-title">Kuis Minyak Sawit</h1>
+    <p class="subtitle">Palm Oil and the Environment - Interactive Quiz</p>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="global-progress"></div>
+    </div>
+    <div class="progress-text" id="progress-text">0 of 0 questions answered</div>
+  </div>
+</header>
+
+<nav class="tabs-wrap">
+  <div class="tabs" id="tabs"></div>
+</nav>
+
+<main class="main">
+  <div id="quiz-container"></div>
+  <div id="final-results">
+    <div class="final-card">
+      <div class="final-title">Kuis Selesai - Quiz Complete</div>
+      <div class="final-big-score" id="final-score-num">-</div>
+      <div class="final-total" id="final-score-label">out of - questions correct</div>
+      <div class="section-breakdown" id="section-breakdown"></div>
+      <div id="final-msg" style="font-size:16px;color:var(--cream);margin-bottom:24px;font-style:italic;line-height:1.6;"></div>
+      <button class="btn-restart" onclick="restart()">Mulai Lagi - Restart Quiz</button>
+    </div>
+  </div>
+</main>
+
+<script>
+const SECTIONS = [
+  {
+    id: 'bagian1',
+    number: '1',
+    title: 'Apa itu Minyak Sawit?',
+    subtitle: 'What is Palm Oil?',
+    questions: [
+      {
+        q: 'Dari bagian mana pohon kelapa sawit dihasilkan minyak sawit?',
+        options: [
+          'Dari akar pohon kelapa sawit',
+          'Dari buah dan biji pohon kelapa sawit',
+          'Dari daun pohon kelapa sawit',
+          'Dari batang pohon kelapa sawit'
+        ],
+        answer: 1,
+        feedback: 'Benar! Minyak sawit berasal dari buah, dan minyak inti sawit berasal dari biji. Buahnya berwarna oranye kemerahan dan tumbuh dalam tandan besar.'
+      },
+      {
+        q: 'Berapa persen ekspor minyak sawit global berasal dari Indonesia pada tahun 2023?',
+        options: ['25%', '40%', '54%', '83%'],
+        answer: 2,
+        feedback: 'Benar! Indonesia memproduksi sekitar 47 juta ton minyak sawit mentah - 54% dari seluruh ekspor minyak sawit dunia. (Sumber: SEI/Trase 2024)'
+      },
+      {
+        q: 'Mengapa konsumen Australia sering tidak menyadari bahwa produk mereka mengandung minyak sawit?',
+        options: [
+          'Karena minyak sawit tidak digunakan di Australia',
+          'Karena minyak sawit sering hanya tercantum sebagai "minyak nabati" pada label',
+          'Karena label produk ditulis dalam Bahasa Indonesia',
+          'Karena minyak sawit tidak berbahaya sehingga tidak perlu dicantumkan'
+        ],
+        answer: 1,
+        feedback: 'Tepat! Australia belum mewajibkan pelabelan minyak sawit secara khusus. Ia sering hanya tercantum sebagai "minyak nabati", sehingga konsumen tidak selalu menyadari keberadaannya.'
+      },
+      {
+        q: 'Proses apa yang dilakukan setelah tandan buah kelapa sawit dipanen?',
+        options: [
+          'Langsung dikirim ke pabrik pengolahan makanan',
+          'Dikukus lalu diperas untuk menghasilkan minyak sawit mentah',
+          'Dikeringkan di bawah sinar matahari selama beberapa minggu',
+          'Dibekukan untuk menjaga kualitas minyaknya'
+        ],
+        answer: 1,
+        feedback: 'Benar! Setelah dipanen, tandan buah dikukus lalu diperas untuk menghasilkan minyak sawit mentah (crude palm oil). Minyak ini kemudian dimurnikan sebelum digunakan.'
+      },
+      {
+        q: 'Mengapa minyak sawit lebih produktif dibandingkan kedelai atau bunga matahari?',
+        options: [
+          'Karena pohon kelapa sawit tumbuh lebih cepat',
+          'Karena dari satu hektar lahan, kelapa sawit menghasilkan 4-8 kali lebih banyak minyak',
+          'Karena minyak sawit tidak membutuhkan pupuk',
+          'Karena buah kelapa sawit lebih besar dari kedelai'
+        ],
+        answer: 1,
+        feedback: 'Tepat! Produktivitas lahan yang tinggi adalah salah satu alasan utama mengapa minyak sawit sangat populer dan murah di pasar global.'
+      }
+    ]
+  },
+  {
+    id: 'bagian2',
+    number: '2',
+    title: 'Manfaat Minyak Sawit',
+    subtitle: 'Benefits of Palm Oil',
+    questions: [
+      {
+        q: 'Berapa orang yang bekerja di industri kelapa sawit Indonesia secara langsung maupun tidak langsung?',
+        options: ['1,6 juta orang', '16 juta orang', '160 juta orang', '6 juta orang'],
+        answer: 1,
+        feedback: 'Benar! Lebih dari 16 juta orang bekerja secara langsung maupun tidak langsung di industri ini - angka yang sangat besar dan perlu dipertimbangkan dalam diskusi tentang dampak minyak sawit.'
+      },
+      {
+        q: 'Mengapa mengganti minyak sawit dengan minyak nabati lain tidak selalu merupakan jalan keluar yang lebih baik?',
+        options: [
+          'Karena minyak lain lebih mahal diproduksi',
+          'Karena minyak lain membutuhkan 4-10 kali lebih banyak lahan untuk jumlah minyak yang sama',
+          'Karena konsumen tidak mau membeli minyak lain',
+          'Karena minyak lain tidak bisa digunakan dalam makanan'
+        ],
+        answer: 1,
+        feedback: 'Tepat! Ini adalah argumen penting: mengganti minyak sawit dengan kedelai atau minyak lain justru membutuhkan jauh lebih banyak lahan, yang bisa memperburuk masalah lingkungan secara global.'
+      },
+      {
+        q: 'Apa yang dimaksud dengan "dilema" yang dihadapi banyak petani kecil?',
+        options: [
+          'Mereka tidak bisa menjual minyak sawit karena terlalu murah',
+          'Mereka bergantung pada industri yang merusak lingkungan tempat tinggal mereka sendiri',
+          'Mereka tidak mendapat izin dari pemerintah untuk bertani kelapa sawit',
+          'Mereka tidak punya tanah untuk menanam kelapa sawit'
+        ],
+        answer: 1,
+        feedback: 'Tepat! Ini adalah kontradiksi yang kompleks - kelapa sawit memberi mereka penghasilan, tapi juga merusak hutan dan ekosistem yang menjadi bagian dari kehidupan mereka.'
+      },
+      {
+        q: 'Berapa persen kontribusi industri kelapa sawit terhadap PDB Indonesia?',
+        options: ['1,5%', '4,5%', '14,5%', '45%'],
+        answer: 1,
+        feedback: 'Benar! Industri kelapa sawit berperan sebesar 4,5 persen terhadap PDB Indonesia dan menjadikannya ekspor terbesar kedua negara itu.'
+      }
+    ]
+  },
+  {
+    id: 'bagian3',
+    number: '3',
+    title: 'Dampak Terhadap Hutan & Lahan Gambut',
+    subtitle: 'Impact on Forests and Peatlands',
+    questions: [
+      {
+        q: 'Berapa luas perkebunan kelapa sawit di Indonesia saat ini?',
+        options: ['1,2 juta hektar', '12 juta hektar', '120 juta hektar', '3 juta hektar'],
+        answer: 1,
+        feedback: 'Benar! Lebih dari 12 juta hektar - area yang lebih luas dari seluruh pulau Jawa. Ini menggambarkan skala perluasan industri yang luar biasa besar.'
+      },
+      {
+        q: 'Apa fungsi utama lahan gambut yang PERTAMA disebutkan dalam artikel?',
+        options: [
+          'Menyediakan kayu untuk industri furnitur',
+          'Menyimpan karbon dalam jumlah yang sangat besar',
+          'Menjadi sumber air minum bagi masyarakat',
+          'Tempat bertani bagi masyarakat adat'
+        ],
+        answer: 1,
+        feedback: 'Tepat! Lahan gambut menyimpan karbon lebih besar dari dua kali seluruh hutan di dunia digabungkan - menjadikannya salah satu ekosistem paling penting di bumi untuk perubahan iklim.'
+      },
+      {
+        q: 'Mengapa lahan gambut yang dikeringkan menjadi sangat berbahaya?',
+        options: [
+          'Karena air yang keluar merusak sungai dan danau di sekitarnya',
+          'Karena tanahnya menjadi mudah terbakar dan api bisa membakar di bawah permukaan berbulan-bulan',
+          'Karena tanah gambut beracun bagi tanaman kelapa sawit',
+          'Karena pengeringan menyebabkan banjir di daerah sekitarnya'
+        ],
+        answer: 1,
+        feedback: 'Tepat! Api gambut sangat berbahaya karena bisa membakar di bawah permukaan selama berbulan-bulan, melepaskan karbon yang tersimpan ribuan tahun hanya dalam hitungan hari.'
+      },
+      {
+        q: 'Berapa persen hilangnya hutan tua Indonesia dalam dua dekade terakhir berkaitan dengan perkebunan kelapa sawit?',
+        options: ['Sekitar sepersepuluh (10%)', 'Sekitar sepertiga (33%)', 'Sekitar separuh (50%)', 'Sekitar dua pertiga (66%)'],
+        answer: 1,
+        feedback: 'Benar! Menurut SEI/Trase (2024), perkebunan kelapa sawit bertanggung jawab atas sekitar sepertiga dari hilangnya hutan tua Indonesia - satu angka yang sangat berarti.'
+      },
+      {
+        q: 'Selain menyimpan karbon, apa manfaat lain lahan gambut yang disebutkan dalam artikel?',
+        options: [
+          'Menghasilkan oksigen lebih banyak dari hutan biasa',
+          'Mengatur tata air dan mendukung keanekaragaman hayati yang unik',
+          'Menyediakan tanah paling subur untuk pertanian',
+          'Menghasilkan gas alam yang berguna'
+        ],
+        answer: 1,
+        feedback: 'Tepat! Lahan gambut berfungsi seperti spons raksasa - menyerap air hujan, mencegah banjir, dan mendukung spesies yang tidak ditemukan di tempat lain.'
+      }
+    ]
+  },
+  {
+    id: 'bagian4',
+    number: '4',
+    title: 'Dampak Terhadap Satwa Liar',
+    subtitle: 'Impact on Wildlife',
+    questions: [
+      {
+        q: 'Berapa harimau Sumatera yang diperkirakan masih hidup di alam liar?',
+        options: ['Sekitar 4.000', 'Sekitar 400', 'Sekitar 40', 'Sekitar 4.000.000'],
+        answer: 1,
+        feedback: 'Benar! Hanya sekitar 400 harimau Sumatera yang masih hidup di alam liar - angka yang sangat mengkhawatirkan. Bahkan di Taman Nasional Tesso Nilo yang didirikan untuk melindungi mereka, 43% wilayahnya dikuasai perkebunan ilegal.'
+      },
+      {
+        q: 'Apa yang dimaksud dengan "kaskade trofik" dalam konteks artikel ini?',
+        options: [
+          'Proses hujan yang membantu pertumbuhan hutan',
+          'Rangkaian dampak di seluruh rantai makanan ketika satu spesies kunci hilang',
+          'Program pemerintah untuk memulihkan hutan yang rusak',
+          'Cara pohon-pohon besar melindungi pohon yang lebih kecil'
+        ],
+        answer: 1,
+        feedback: 'Tepat! Ketika predator puncak seperti harimau berkurang, populasi mangsanya meledak, merusak vegetasi, dan menekan spesies lebih kecil. Hilangnya satu spesies bisa mengguncang seluruh ekosistem.'
+      },
+      {
+        q: 'Mengapa peran orangutan sebagai "penyebar benih" penting bagi hutan?',
+        options: [
+          'Karena orangutan membantu manusia menemukan buah-buahan di hutan',
+          'Karena ketika orangutan hilang, kemampuan hutan untuk memulihkan diri pun berkurang',
+          'Karena orangutan menghasilkan pupuk alami yang menyuburkan tanah hutan',
+          'Karena orangutan membangun sarang yang menjadi rumah hewan lain'
+        ],
+        answer: 1,
+        feedback: 'Tepat! Orangutan menyebarkan benih pohon ketika mereka bergerak dan makan, sehingga membantu regenerasi hutan secara alami. Tanpa mereka, hutan kesulitan pulih setelah rusak.'
+      },
+      {
+        q: 'Mengapa artikel menyebutkan bahwa ada BANYAK penyebab penggundulan hutan - bukan hanya minyak sawit?',
+        options: [
+          'Untuk membela industri minyak sawit dari kritik yang tidak adil',
+          'Karena bahasa yang bernuansa dan akurat lebih penting daripada pernyataan yang terlalu mutlak',
+          'Karena penebangan kayu sebenarnya lebih berbahaya dari minyak sawit',
+          'Karena minyak sawit tidak terlalu berpengaruh terhadap penggundulan hutan'
+        ],
+        answer: 1,
+        feedback: 'Tepat! Ini adalah prinsip penting dalam ujian lisan - pernyataan yang bernuansa ("turut menyebabkan") lebih akurat dan lebih sulit ditantang dibandingkan klaim mutlak ("satu-satunya penyebab").'
+      }
+    ]
+  },
+  {
+    id: 'bagian5',
+    number: '5',
+    title: 'Kebakaran Hutan dan Kabut Asap',
+    subtitle: 'Forest Fires and Haze',
+    questions: [
+      {
+        q: 'Mengapa membakar lahan lebih sering dipilih daripada menggunakan alat berat untuk membuka perkebunan?',
+        options: [
+          'Karena api lebih efektif membersihkan lahan dari hama',
+          'Karena membakar lahan hanya memerlukan sekitar 500 ribu rupiah per hektar - jauh lebih murah',
+          'Karena pemerintah mengizinkan pembakaran tetapi melarang alat berat',
+          'Karena alat berat tidak bisa beroperasi di hutan tropis'
+        ],
+        answer: 1,
+        feedback: 'Benar! Membakar lahan hanya memerlukan sekitar 500.000 rupiah per hektar, sedangkan alat berat memakan 5-7 juta rupiah. Perbedaan biaya yang besar ini menjadikan pembakaran pilihan yang menggiurkan meski sangat merusak.'
+      },
+      {
+        q: 'Berapa indeks pencemaran udara yang tercatat di Jambi selama kebakaran parah tahun 2015?',
+        options: ['160', '360', '601', '61'],
+        answer: 2,
+        feedback: 'Benar! Indeks 601 adalah dua kali lipat dari batas aman. Dampaknya sangat parah: jutaan anak tidak bisa bersekolah, rumah sakit kewalahan, dan penerbangan terganggu di seluruh Asia Tenggara.'
+      },
+      {
+        q: 'Selain perkebunan kelapa sawit, apa penyebab lain kebakaran hutan yang disebutkan dalam artikel?',
+        options: [
+          'Petir dan fenomena alam lainnya',
+          'Pertanian bakar-tebas oleh petani kecil dan kelalaian manusia secara umum',
+          'Aktivitas gunung berapi di Sumatera dan Kalimantan',
+          'Pembakaran sampah oleh penduduk kota'
+        ],
+        answer: 1,
+        feedback: 'Tepat! Artikel menyebutkan pertanian bakar-tebas dan kelalaian manusia sebagai faktor lain - penting untuk mengakui ini agar argumen kita bernuansa dan tidak terlalu mutlak.'
+      },
+      {
+        q: 'Bagaimana El Nino berhubungan dengan kebakaran hutan di Indonesia?',
+        options: [
+          'El Nino membawa hujan lebat yang memadamkan api secara alami',
+          'El Nino memperpanjang musim kemarau sehingga lahan gambut menjadi lebih kering dan mudah terbakar',
+          'El Nino menyebabkan angin kencang yang menyebarkan api lebih cepat',
+          'El Nino tidak berhubungan dengan kebakaran hutan di Indonesia'
+        ],
+        answer: 1,
+        feedback: 'Benar! El Nino memperpanjang musim kemarau, yang membuat lahan gambut yang sudah dikeringkan menjadi sangat rentan terbakar - kombinasi yang sangat berbahaya bagi lingkungan dan kesehatan masyarakat.'
+      }
+    ]
+  },
+  {
+    id: 'bagian6',
+    number: '6',
+    title: 'Dampak Terhadap Masyarakat',
+    subtitle: 'Impact on Communities',
+    questions: [
+      {
+        q: 'Berapa banyak konflik lahan di Indonesia yang berkaitan langsung dengan industri minyak sawit?',
+        options: ['Lebih dari 70', 'Lebih dari 700', 'Lebih dari 7.000', 'Kurang dari 7'],
+        answer: 1,
+        feedback: 'Benar! Lebih dari 700 konflik lahan di Indonesia berkaitan langsung dengan industri minyak sawit, mencerminkan betapa luasnya dampak sosial dari industri ini.'
+      },
+      {
+        q: 'Apa hasil penting dari perjuangan suku Awyu dan Moi di Mahkamah Agung pada Desember 2024?',
+        options: [
+          'Pemerintah setuju membayar ganti rugi kepada kedua suku',
+          'Mahkamah Agung memutuskan mendukung mereka, menyelamatkan 65.415 hektar hutan dari penebangan lebih lanjut',
+          'Kedua suku mendapat hak untuk mengelola perkebunan kelapa sawit sendiri',
+          'Pemerintah melarang semua perkebunan baru di Papua Barat'
+        ],
+        answer: 1,
+        feedback: 'Tepat! Kemenangan hukum ini sangat berarti - 65.415 hektar hutan berhasil dilindungi. Kasus ini juga menjadi preseden penting untuk perlindungan hak masyarakat adat di Indonesia.'
+      },
+      {
+        q: 'Berapa banyak masyarakat adat di Indonesia yang menggantungkan hidup pada hutan?',
+        options: ['5-7 juta', '50-70 juta', '500-700 ribu', '5-7 ribu'],
+        answer: 1,
+        feedback: 'Benar! Antara 50 hingga 70 juta masyarakat adat di Indonesia telah menjaga hutan selama berabad-abad sebagai bagian dari identitas dan kehidupan mereka.'
+      },
+      {
+        q: 'Mengapa Menurut Human Rights Watch, situasi masyarakat adat yang digusur dari tanahnya sangat bermasalah?',
+        options: [
+          'Karena mereka tidak mendapat pekerjaan pengganti di perkebunan',
+          'Karena mereka digusur dari tanah leluhur tanpa ganti rugi yang adil',
+          'Karena pemerintah tidak memberikan pendidikan kepada anak-anak mereka',
+          'Karena mereka dipaksa pindah ke pulau lain'
+        ],
+        answer: 1,
+        feedback: 'Tepat! Human Rights Watch menyoroti bahwa penggusuran sering terjadi tanpa ganti rugi yang layak - sebuah pelanggaran hak asasi manusia yang serius di samping dampak lingkungannya.'
+      }
+    ]
+  },
+  {
+    id: 'bagian7',
+    number: '7',
+    title: 'Dampak Terhadap Iklim',
+    subtitle: 'Climate Change Impact',
+    questions: [
+      {
+        q: 'Berapa persen emisi gas rumah kaca Indonesia yang bersumber dari kerusakan hutan?',
+        options: ['Sekitar 28%', 'Sekitar 48%', 'Hingga 83%', 'Sekitar 33%'],
+        answer: 2,
+        feedback: 'Benar! Menurut Dewan Nasional Perubahan Iklim Indonesia, kerusakan hutan menyumbang hingga 83% dari total emisi gas rumah kaca Indonesia - angka yang sangat mencolok.'
+      },
+      {
+        q: 'Mengapa lahan gambut yang terbakar lebih berbahaya bagi iklim dibandingkan hutan biasa?',
+        options: [
+          'Karena api gambut lebih panas dan menyebar lebih cepat ke daerah sekitarnya',
+          'Karena gambut melepaskan metana - gas rumah kaca yang 25 kali lebih kuat dari karbon dioksida',
+          'Karena lahan gambut terletak di daerah pantai yang dekat laut',
+          'Karena gambut mengandung lebih banyak oksigen yang memperburuk pembakaran'
+        ],
+        answer: 1,
+        feedback: 'Tepat! Metana yang dilepaskan lahan gambut jauh lebih berbahaya sebagai gas rumah kaca dibandingkan CO2. Ini menjadikan pembakaran lahan gambut salah satu ancaman iklim paling serius.'
+      },
+      {
+        q: 'Bagaimana pilihan belanja konsumen di Australia berhubungan dengan perubahan iklim global?',
+        options: [
+          'Tidak ada hubungannya karena Australia terlalu jauh dari Indonesia',
+          'Ketika konsumen membeli produk dengan minyak sawit tidak berkelanjutan, mereka turut mendorong penggundulan hutan yang memperburuk perubahan iklim',
+          'Hanya pilihan perusahaan besar yang berdampak - konsumen individu tidak berpengaruh',
+          'Hubungannya hanya melalui pencemaran udara dari kabut asap yang bisa mencapai Australia'
+        ],
+        answer: 1,
+        feedback: 'Tepat! Ini adalah argumen kunci: pilihan konsumen di Australia secara tidak langsung mendorong permintaan global yang berdampak pada hutan Indonesia dan iklim kita semua.'
+      },
+      {
+        q: 'Pada tahun 2015, Indonesia sempat melampaui Amerika Serikat dalam hal emisi. Apa penyebab utamanya?',
+        options: [
+          'Pembangunan banyak pabrik industri baru di Jawa',
+          'Kebakaran lahan gambut yang sangat parah selama musim kemarau',
+          'Ekspansi besar-besaran kendaraan bermotor di kota-kota besar Indonesia',
+          'Penggunaan batu bara sebagai sumber energi utama'
+        ],
+        answer: 1,
+        feedback: 'Benar! Kebakaran lahan gambut 2015 yang sangat parah menyebabkan Indonesia sementara melampaui AS dalam hal emisi - menunjukkan betapa berbahayanya pengeringan dan pembakaran lahan gambut.'
+      }
+    ]
+  },
+  {
+    id: 'bagian8',
+    number: '8',
+    title: 'Solusi dan Tindakan',
+    subtitle: 'Solutions and Action',
+    questions: [
+      {
+        q: 'Taronga Zoo Sydney mengumpulkan berapa pesan dukungan untuk merek yang berkomitmen pada minyak sawit berkelanjutan?',
+        options: ['1.300', '13.000', '103.000', '1.030.000'],
+        answer: 2,
+        feedback: 'Benar! Lebih dari 103.000 pesan dukungan - angka yang menunjukkan betapa besarnya kepedulian masyarakat Australia terhadap isu ini.'
+      },
+      {
+        q: 'Mengapa beberapa pihak berpendapat bahwa kritik Barat terhadap Indonesia "tidak sepenuhnya adil"?',
+        options: [
+          'Karena Indonesia adalah negara berkembang yang membutuhkan dana dari negara kaya',
+          'Karena negara-negara maju seperti Australia dan Eropa telah lama menebang hutan mereka sendiri untuk pertanian',
+          'Karena Indonesia sudah melakukan banyak upaya perlindungan lingkungan',
+          'Karena data ilmiah tentang dampak minyak sawit masih diperdebatkan'
+        ],
+        answer: 1,
+        feedback: 'Tepat! Ini adalah sudut pandang yang penting untuk dipahami dalam ujian lisan. Mengakui argumen ini lalu meresponsnya dengan bijaksana akan membuat jawaban kamu terdengar lebih canggih dan bernuansa.'
+      },
+      {
+        q: 'Mengapa memboikot SEMUA minyak sawit mungkin bukan jalan keluar terbaik?',
+        options: [
+          'Karena boikot akan melukai perasaan masyarakat Indonesia',
+          'Karena mengganti minyak sawit dengan minyak lain justru membutuhkan lebih banyak lahan',
+          'Karena minyak sawit adalah satu-satunya minyak yang bisa digunakan dalam produk kosmetik',
+          'Karena boikot tidak legal di Australia'
+        ],
+        answer: 1,
+        feedback: 'Tepat! Argumen ini penting: daripada memboikot, lebih baik memilih produk bersertifikat RSPO. Kedelai atau minyak bunga matahari membutuhkan jauh lebih banyak lahan untuk jumlah yang sama.'
+      },
+      {
+        q: 'Apa yang dimaksud dengan "moratorium" dalam konteks kebijakan kelapa sawit Indonesia?',
+        options: [
+          'Program sertifikasi untuk perkebunan kelapa sawit yang sudah ada',
+          'Larangan sementara terhadap penerbitan izin perkebunan baru',
+          'Pajak tambahan untuk ekspor minyak sawit',
+          'Program beasiswa bagi petani kecil untuk belajar pertanian berkelanjutan'
+        ],
+        answer: 1,
+        feedback: 'Benar! Indonesia memberlakukan moratorium izin perkebunan baru pada 2018 - artinya tidak ada izin baru yang diberikan untuk membuka lahan baru. Ini adalah salah satu langkah perlindungan hutan yang penting.'
+      }
+    ]
+  },
+  {
+    id: 'bagian9',
+    number: '9',
+    title: 'Australia dan Minyak Sawit',
+    subtitle: "Australia's Role",
+    questions: [
+      {
+        q: 'Organisasi mana yang menjalankan program "Don\'t Palm Us Off" di Australia?',
+        options: ['WWF Australia', 'Zoos Victoria', 'Greenpeace Australia', 'RSPO'],
+        answer: 1,
+        feedback: 'Benar! Zoos Victoria menjalankan kampanye "Don\'t Palm Us Off" untuk mendorong pelabelan wajib minyak sawit dan penggunaan minyak sawit berkelanjutan di Australia.'
+      },
+      {
+        q: 'Mengapa Australia belum mewajibkan pelabelan minyak sawit secara khusus pada produk?',
+        options: [
+          'Karena industri minyak sawit memiliki pengaruh politik yang besar di Australia',
+          'Karena Food Standards Australia New Zealand (FSANZ) menilai hal itu di luar wewenang mereka',
+          'Karena konsumen Australia sudah tahu cara mengenali produk minyak sawit',
+          'Karena pelabelan minyak sawit sudah diwajibkan di semua produk impor'
+        ],
+        answer: 1,
+        feedback: 'Tepat! FSANZ pernah menolak permohonan pelabelan wajib karena menilai itu di luar wewenang mereka - sehingga minyak sawit masih bisa disembunyikan di balik label "minyak nabati".'
+      },
+      {
+        q: 'Apa yang bisa dilakukan konsumen Australia SEKARANG sambil menunggu perubahan kebijakan?',
+        options: [
+          'Berhenti menggunakan semua produk yang bisa mengandung minyak sawit',
+          'Mencari logo RSPO dan menulis surat kepada perusahaan tentang keterbukaan rantai pasokan',
+          'Mengunjungi Indonesia untuk melihat langsung dampak perkebunan kelapa sawit',
+          'Meminta pemerintah Australia untuk melarang semua impor dari Indonesia'
+        ],
+        answer: 1,
+        feedback: 'Tepat! Mencari logo RSPO saat berbelanja dan mendesak perusahaan untuk lebih terbuka tentang bahan-bahan mereka adalah tindakan konkret yang bisa dilakukan sekarang.'
+      },
+      {
+        q: 'Mengapa artikel menyebut Indonesia sebagai "tetangga terdekat" Australia dalam konteks ini?',
+        options: [
+          'Untuk mengingatkan bahwa Australia dan Indonesia memiliki banyak kesamaan budaya',
+          'Karena ketika hutan Indonesia terbakar, asapnya bisa mencapai Australia - masalah ini tidak jauh dari kita',
+          'Untuk mendorong wisatawan Australia mengunjungi perkebunan kelapa sawit di Indonesia',
+          'Karena Australia mengimpor sebagian besar makanannya dari Indonesia'
+        ],
+        answer: 1,
+        feedback: 'Tepat! Masalah lingkungan di Indonesia bukan hanya urusan Indonesia. Kita semua terhubung - dan ini adalah argumen yang kuat untuk menutup ujian lisan kamu.'
+      }
+    ]
+  }
+];
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let state = {
+  current: 0,
+  answers: {}, // sectionId -> { qIndex -> { chosen, correct } }
+  sectionDone: {} // sectionId -> bool
+};
+
+function getSectionAnswers(sectionId) {
+  if (!state.answers[sectionId]) state.answers[sectionId] = {};
+  return state.answers[sectionId];
+}
+
+function getSectionScore(sectionId) {
+  const ans = state.answers[sectionId] || {};
+  const section = SECTIONS.find(s => s.id === sectionId);
+  let correct = 0;
+  for (let i = 0; i < section.questions.length; i++) {
+    if (ans[i] && ans[i].correct) correct++;
+  }
+  return { correct, total: section.questions.length };
+}
+
+function getTotalAnswered() {
+  let answered = 0;
+  let total = 0;
+  SECTIONS.forEach(s => {
+    total += s.questions.length;
+    const ans = state.answers[s.id] || {};
+    answered += Object.keys(ans).length;
+  });
+  return { answered, total };
+}
+
+function getTotalScore() {
+  let correct = 0, total = 0;
+  SECTIONS.forEach(s => {
+    const sc = getSectionScore(s.id);
+    correct += sc.correct;
+    total += sc.total;
+  });
+  return { correct, total };
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+function render() {
+  renderTabs();
+  renderSections();
+  updateProgress();
+}
+
+function renderTabs() {
+  const tabsEl = document.getElementById('tabs');
+  tabsEl.innerHTML = '';
+  SECTIONS.forEach((s, i) => {
+    const sc = getSectionScore(s.id);
+    const ans = state.answers[s.id] || {};
+    const answeredCount = Object.keys(ans).length;
+    const isComplete = answeredCount === s.questions.length;
+    const isInProgress = answeredCount > 0 && !isComplete;
+
+    const tab = document.createElement('button');
+    tab.className = 'tab' + (i === state.current ? ' active' : '') +
+      (isComplete ? ' completed' : '') + (isInProgress ? ' in-progress' : '');
+    tab.innerHTML = `<span class="tab-status"></span>${s.number}. ${s.title.split(' ').slice(0,3).join(' ')}`;
+    tab.onclick = () => { state.current = i; render(); };
+    tabsEl.appendChild(tab);
+  });
+}
+
+function renderSections() {
+  const container = document.getElementById('quiz-container');
+  const finalResults = document.getElementById('final-results');
+
+  // Check if all done
+  const allDone = SECTIONS.every(s => {
+    const ans = state.answers[s.id] || {};
+    return Object.keys(ans).length === s.questions.length;
+  });
+
+  if (allDone) {
+    container.style.display = 'none';
+    finalResults.classList.add('show');
+    renderFinalResults();
+    return;
+  }
+
+  container.style.display = 'block';
+  finalResults.classList.remove('show');
+  container.innerHTML = '';
+
+  SECTIONS.forEach((s, si) => {
+    const panel = document.createElement('div');
+    panel.className = 'section-panel' + (si === state.current ? ' active' : '');
+    panel.id = 'panel-' + s.id;
+
+    const sc = getSectionScore(s.id);
+    const ans = state.answers[s.id] || {};
+    const answeredCount = Object.keys(ans).length;
+    const isComplete = answeredCount === s.questions.length;
+
+    panel.innerHTML = `
+      <div class="section-header">
+        <div class="section-number">${s.number}</div>
+        <div class="section-meta">
+          <h2>${s.title}</h2>
+          <div class="section-sub">${s.subtitle}</div>
+        </div>
+        ${answeredCount > 0 ? `
+        <div class="section-score-badge">
+          <div class="score-val">${sc.correct}/${sc.total}</div>
+          <div class="score-label">Benar</div>
+        </div>` : ''}
+      </div>
+    `;
+
+    s.questions.forEach((q, qi) => {
+      const qAns = ans[qi];
+      const card = document.createElement('div');
+      card.className = 'question-card' +
+        (qAns ? (qAns.correct ? ' answered-correct' : ' answered-wrong') : '');
+
+      const letters = ['A','B','C','D'];
+      const optionsHTML = q.options.map((opt, oi) => {
+        let cls = 'option';
+        if (qAns !== undefined) {
+          if (oi === q.answer) cls += ' correct';
+          else if (oi === qAns.chosen) cls += ' wrong';
+          else cls += ' dimmed';
+        }
+        return `<button class="${cls}" onclick="answer(${si},${qi},${oi})" ${qAns !== undefined ? 'disabled' : ''}>
+          <span class="option-letter">${letters[oi]}</span>
+          <span>${opt}</span>
+        </button>`;
+      }).join('');
+
+      const feedbackCls = qAns ? (qAns.correct ? 'correct-fb' : 'wrong-fb') : '';
+      const feedbackShow = qAns ? 'show' : '';
+
+      card.innerHTML = `
+        <div class="q-number">Pertanyaan ${qi + 1} dari ${s.questions.length}</div>
+        <div class="q-text">${q.q}</div>
+        <div class="options">${optionsHTML}</div>
+        <div class="feedback ${feedbackCls} ${feedbackShow}">
+          ${qAns ? (qAns.correct
+            ? '<strong>Benar! ✓</strong> ' + q.feedback
+            : '<strong>Belum tepat.</strong> Jawaban yang benar adalah <strong>' + q.options[q.answer] + '</strong>. ' + q.feedback)
+          : ''}
+        </div>
+      `;
+      panel.appendChild(card);
+    });
+
+    // Section result
+    if (isComplete) {
+      const resDiv = document.createElement('div');
+      resDiv.className = 'section-result show';
+      const pct = Math.round((sc.correct / sc.total) * 100);
+      const msg = pct === 100
+        ? 'Sempurna! Kamu menguasai bagian ini dengan sangat baik.'
+        : pct >= 75
+        ? 'Bagus sekali! Kamu memahami sebagian besar materi bagian ini.'
+        : pct >= 50
+        ? 'Cukup baik. Ada beberapa konsep yang perlu dipelajari lagi.'
+        : 'Perlu lebih banyak latihan untuk bagian ini. Coba baca kembali artikelnya!';
+
+      const nextSection = SECTIONS[si + 1];
+      const nextBtn = nextSection
+        ? `<button class="btn-next" onclick="goNext(${si + 1})">Lanjut ke Bagian ${nextSection.number} - ${nextSection.title} →</button>`
+        : `<button class="btn-next" onclick="showFinal()">Lihat Hasil Akhir →</button>`;
+
+      resDiv.innerHTML = `
+        <div class="result-score">${sc.correct}/${sc.total}</div>
+        <div class="result-label">${pct}% benar</div>
+        <div class="result-msg">${msg}</div>
+        ${nextBtn}
+      `;
+      panel.appendChild(resDiv);
+    }
+
+    container.appendChild(panel);
+  });
+}
+
+function renderFinalResults() {
+  const sc = getTotalScore();
+  const pct = Math.round((sc.correct / sc.total) * 100);
+
+  document.getElementById('final-score-num').textContent = sc.correct + '/' + sc.total;
+  document.getElementById('final-score-label').textContent = `${pct}% benar dari seluruh pertanyaan`;
+
+  const msg = pct === 100
+    ? 'Luar biasa! Kamu siap menghadapi ujian lisan dengan sangat percaya diri.'
+    : pct >= 80
+    ? 'Sangat bagus! Kamu memahami topik ini dengan baik. Pelajari kembali bagian yang belum sempurna.'
+    : pct >= 60
+    ? 'Cukup baik! Ada beberapa bagian yang masih perlu diperdalam sebelum ujian lisan.'
+    : 'Masih perlu banyak latihan. Baca kembali booklet dan coba lagi - kamu pasti bisa!';
+
+  document.getElementById('final-msg').textContent = msg;
+
+  const breakdown = document.getElementById('section-breakdown');
+  breakdown.innerHTML = '';
+  SECTIONS.forEach(s => {
+    const ssc = getSectionScore(s.id);
+    const spct = Math.round((ssc.correct / ssc.total) * 100);
+    const item = document.createElement('div');
+    item.className = 'breakdown-item';
+    item.innerHTML = `
+      <div class="breakdown-section">Bagian ${s.number}</div>
+      <div class="breakdown-score">${ssc.correct}/${ssc.total}</div>
+      <div class="breakdown-bar"><div class="breakdown-bar-fill" style="width:${spct}%"></div></div>
+    `;
+    breakdown.appendChild(item);
+  });
+}
+
+// ─── ACTIONS ──────────────────────────────────────────────────────────────────
+function answer(si, qi, chosen) {
+  const section = SECTIONS[si];
+  const ans = getSectionAnswers(section.id);
+  if (ans[qi] !== undefined) return; // already answered
+
+  const correct = chosen === section.questions[qi].answer;
+  ans[qi] = { chosen, correct };
+  render();
+
+  // Scroll to the answered card smoothly
+  setTimeout(() => {
+    const cards = document.querySelectorAll('#panel-' + section.id + ' .question-card');
+    if (cards[qi]) {
+      cards[qi].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, 100);
+}
+
+function goNext(sectionIndex) {
+  state.current = sectionIndex;
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showFinal() {
+  const { answered, total } = getTotalAnswered();
+  // Mark any remaining as done
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function restart() {
+  state = { current: 0, answers: {}, sectionDone: {} };
+  document.getElementById('final-results').classList.remove('show');
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateProgress() {
+  const { answered, total } = getTotalAnswered();
+  const pct = total > 0 ? (answered / total) * 100 : 0;
+  document.getElementById('global-progress').style.width = pct + '%';
+  document.getElementById('progress-text').textContent =
+    `${answered} of ${total} questions answered`;
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
