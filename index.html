@@ -109,6 +109,29 @@
     margin-bottom: 28px;
   }
 
+  .btn-article {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    margin-bottom: 24px;
+    background: rgba(184,150,46,0.12);
+    border: 1px solid var(--gold);
+    border-radius: 6px;
+    color: var(--gold-light);
+    font-family: 'Source Serif 4', serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.2s;
+  }
+
+  .btn-article:hover {
+    background: rgba(184,150,46,0.22);
+    transform: translateY(-1px);
+  }
+
   .progress-bar-wrap {
     background: rgba(255,255,255,0.1);
     border-radius: 4px;
@@ -613,6 +636,7 @@
     <div class="kuis-label">VCE Indonesian - Units 3 &amp; 4</div>
     <h1 class="main-title">Kuis Minyak Sawit</h1>
     <p class="subtitle">Palm Oil and the Environment - Interactive Quiz</p>
+    <a class="btn-article" href="palm-oil-indonesia.html">📖 Baca Artikel Dulu - Read the Article First</a>
     <div class="progress-bar-wrap">
       <div class="progress-bar-fill" id="global-progress"></div>
     </div>
